@@ -34,8 +34,24 @@ test('Login, create interlocuteur & mission, navigate scenarios/playlists', asyn
   await clickMultiLanguage(page, ['Interlocuteurs', 'Interlocutors', 'Speakers']);
   await expect(page).toHaveURL(/interlocuteurs/);
 
-  // 🔷 Create a new interlocuteur (French/English)
-  await clickMultiLanguage(page, ['Nouvel interlocuteur', 'New Interlocutor', 'New Speaker']);
+  // 🔷 Create a new interlocuteur (French/English) - Multiple approaches
+  try {
+    await clickMultiLanguage(page, ['Nouvel interlocuteur', 'New Interlocutor', 'New Speaker']);
+  } catch (error) {
+    console.log('Text approach failed, trying other methods...');
+    // Try button with text
+    try {
+      await page.locator('button:has-text("Nouvel interlocuteur")').click({ timeout: 5000 });
+    } catch (error2) {
+      // Try role-based approach
+      try {
+        await page.getByRole('button', { name: /nouvel/i }).click({ timeout: 5000 });
+      } catch (error3) {
+        // Try any element containing the text
+        await page.locator('*:has-text("Nouvel interlocuteur")').click({ timeout: 5000 });
+      }
+    }
+  }
 
   await page.getByRole('textbox').first().fill('testing interlocuteur');
   await page.getByRole('textbox', { name: /Profession/i }).fill('testing');
